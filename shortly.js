@@ -25,6 +25,18 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
+app.get('/login', function(req,res) {
+  res.render('login');
+});
+
+app.get('/*', function(req, res, next) {
+  if (req.cookies.username) {
+    next();
+  } else {
+    res.redirect(301,'/login');
+    // res.render('login');
+      }
+});
 
 app.get('/', 
 function(req, res) {
@@ -41,9 +53,6 @@ function(req, res) {
   res.render('index');
 });
 
-app.get('/login', function(req,res) {
-  res.render('login');
-});
 
 app.get('/signup', function (req, res) {
   res.render('signup');
@@ -58,6 +67,7 @@ function(req, res) {
 
 app.get('/users', function(req,res) {
   Users.reset().fetch().then(function(users) {
+    res.req.path = '/users';
     res.send(200, users.models);
   });
 });
