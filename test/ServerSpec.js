@@ -83,7 +83,6 @@ var xbeforeEach = function(){};
           done();
         });
       });
-    });
 
     it('Only shortens valid urls, returning a 404 - Not found for invalid urls', function(done) {
       var options = {
@@ -137,12 +136,12 @@ var xbeforeEach = function(){};
       it('Fetches the link url title', function (done) {
         requestWithSession(options, function(error, res, body) {
           db.knex('urls')
-            .where('title', '=', 'Funny animal pictures, funny animals, funniest dogs')
+            .where('title', '=', 'Funny pictures of animals, funny dog pictures')
             .then(function(urls) {
               if (urls['0'] && urls['0']['title']) {
                 var foundTitle = urls['0']['title'];
               }
-              expect(foundTitle).to.equal('Funny animal pictures, funny animals, funniest dogs');
+              expect(foundTitle).to.equal('Funny pictures of animals, funny dog pictures');
               done();
             });
         });
@@ -238,7 +237,7 @@ var xbeforeEach = function(){};
 
   }); // 'Priviledged Access'
 
-  xdescribe('Account Creation:', function(){
+  describe('Account Creation:', function(){
 
     it('Signup creates a user record', function(done) {
       var options = {
@@ -286,7 +285,7 @@ var xbeforeEach = function(){};
 
   }); // 'Account Creation'
 
-  xdescribe('Account Login:', function(){
+  describe('Account Login:', function(){
 
     var requestWithSession = request.defaults({jar: true});
 

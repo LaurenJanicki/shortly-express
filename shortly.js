@@ -2,6 +2,8 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
+var cookieParser = require('cookie-parser');
+var bcrypt = require('bcrypt-nodejs');
 
 
 var db = require('./app/config');
@@ -18,6 +20,7 @@ app.set('view engine', 'ejs');
 app.use(partials());
 // Parse JSON (uniform resource locators)
 app.use(bodyParser.json());
+app.use(cookieParser());
 // Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
@@ -25,18 +28,37 @@ app.use(express.static(__dirname + '/public'));
 
 app.get('/', 
 function(req, res) {
-  res.render('index');
+  if (req.cookies.username) {
+    res.render('index');
+  } else {
+    res.render('login');
+  }
 });
 
 app.get('/create', 
 function(req, res) {
+
   res.render('index');
+});
+
+app.get('/login', function(req,res) {
+  res.render('login');
+});
+
+app.get('/signup', function (req, res) {
+  res.render('signup');
 });
 
 app.get('/links', 
 function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
+  });
+});
+
+app.get('/users', function(req,res) {
+  Users.reset().fetch().then(function(users) {
+    res.send(200, users.models);
   });
 });
 
@@ -74,10 +96,55 @@ function(req, res) {
   });
 });
 
+
+
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
+app.post('/signup', function(req, res) {
+  new User({username: req.body.username}).fetch().then(function(found) {
 
+    if (found) {
+      res.send(200, 'Username taken');
+    } else {
+      console.log('Before user is made');
+      var user = new User({
+        username: req.body.username,
+        password: req.body.password
+      });
+
+      console.log('When user is being saved');
+      user.save().then(function(newUser) {
+        Users.add(newUser);
+        res.cookie('username', req.body.username);
+        res.send(200, newUser);
+      });
+    }
+  })
+});
+
+app.post('/login', function(req, res){
+  console.log("-------- login post", req.body);
+  new User({username: req.body.username}).fetch().then(function(found) {
+
+    if (found) {
+      console.log("=========found password", found.get('password'));
+      var pass = bcrypt.hashSync(req.body.password ,found.get('salt'));
+      var didPass = bcrypt.compareSync(req.body.password, pass);
+      console.log('Should pass', didPass);
+      console.log(pass);
+      res.send(200);
+    } else{
+      res.send(404);
+    }
+  });
+});
+
+
+app.post('/*', function(req, res){
+  console.log(req.url);
+  console.log(req.body);
+});
 
 
 /************************************************************/
