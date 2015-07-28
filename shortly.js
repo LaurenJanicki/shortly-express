@@ -25,17 +25,26 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
+app.get('/signup', function (req, res) {
+  res.render('signup');
+});
+
+
 app.get('/login', function(req,res) {
   res.render('login');
 });
 
 app.get('/*', function(req, res, next) {
+  console.log(req.url);
   if (req.cookies.username) {
     next();
+  } else if (req.url === '/signup') {
+    res.redirect('/signup');
+    // res.render('signup');
   } else {
     res.redirect(301,'/login');
     // res.render('login');
-      }
+  }
 });
 
 app.get('/', 
@@ -47,6 +56,7 @@ function(req, res) {
   }
 });
 
+
 app.get('/create', 
 function(req, res) {
 
@@ -54,9 +64,6 @@ function(req, res) {
 });
 
 
-app.get('/signup', function (req, res) {
-  res.render('signup');
-});
 
 app.get('/links', 
 function(req, res) {
@@ -127,7 +134,7 @@ app.post('/signup', function(req, res) {
       user.save().then(function(newUser) {
         Users.add(newUser);
         res.cookie('username', req.body.username);
-        res.send(200, newUser);
+        res.redirect('/');
       });
     }
   })
@@ -143,9 +150,11 @@ app.post('/login', function(req, res){
       var didPass = bcrypt.compareSync(req.body.password, pass);
       console.log('Should pass', didPass);
       console.log(pass);
-      res.send(200);
+      res.cookie('username', req.body.username);
+
+      res.redirect('/');
     } else{
-      res.send(404);
+      res.redirect('/login');
     }
   });
 });

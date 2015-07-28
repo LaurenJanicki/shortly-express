@@ -80,7 +80,7 @@ var beforeEach = function(){
         };
         // login via form and save session info
         requestWithSession(options, function(error, res, body) {
-          done();
+          //done();
         });
       });
   };
